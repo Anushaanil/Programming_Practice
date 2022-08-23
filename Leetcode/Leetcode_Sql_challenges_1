@@ -1,8 +1,9 @@
-# Write an SQL query to calculate the bonus of each employee. 
-# The bonus of an employee is 100% of their salary if the ID of the employee is an odd number and the employee name does not start with the character 'M'. The bonus of an employee is 0 otherwise.
-# Return the result table ordered by employee_id.
+/* 1. Write an SQL query to calculate the bonus of each employee. 
+      The bonus of an employee is 100% of their salary if the ID of the employee is an odd number 
+      and the employee name does not start with the character 'M'. The bonus of an employee is 0 otherwise.
+      Return the result table ordered by employee_id.
+*/
 
-# Write your MySQL query statement below
 select employee_id,
 CASE WHEN employee_id%2 <> 0 AND name NOT like 'M%' then salary
 else 0
@@ -12,14 +13,101 @@ ORDER BY employee_id;
 
 
 ----- OR -----
-# Write your MySQL query statement below
 SELECT employee_id,
 IF((employee_id % 2) <> 0 AND name NOT LIKE 'M%', salary, 0) AS bonus
 FROM Employees
 ORDER BY employee_id;
 
-# Write an SQL query to swap all 'f' and 'm' values (i.e., change all 'f' values to 'm' and vice versa) with a single # update statement and no intermediate temporary tables.
-# Note that you must write a single update statement, do not write any select statement for this problem.
+/* 2. Write an SQL query to swap all 'f' and 'm' values (i.e., change all 'f' values to 'm' and vice versa) 
+with a single # update statement and no intermediate temporary tables.
+Note that you must write a single update statement, do not write any select statement for this problem.
+*/
 
 
 UPDATE salary set sex=(CASE WHEN sex='m' then 'f' else 'm' END)
+
+/* 3. Write an SQL query to delete all the duplicate emails, keeping only one unique email with the smallest id. 
+      Note that you are supposed to write a DELETE statement and not a SELECT one.
+      (1,'anu@gmail.com'),(2, 'john@example.com'), (3, 'bob@example.com'), (4, 'john@example.com');
+*/
+
+-- using inner join --
+DELETE T1 FROM Person AS T1
+INNER JOIN Person AS T2
+WHERE T1.id>T2.id AND T1.email=T2.email
+
+--   using alias --
+DELETE T1 FROM Person T1, Person T2
+WHERE T1.id>T2.id AND T1.email=T2.email
+
+-- using group by --
+delete from person where id not in(
+    select * from (
+        select min(id) from person group by email
+    )
+    as p
+)
+
+/* 4. Write an SQL query to fix the names so that only the first character is uppercase and the rest are lowercase.
+   Return the result table ordered by user_id.
+*/
+
+-- The CONCAT(string_1, string_2, ... string_n) function joins all the string.
+-- The UPPER() function converts a string to upper-case.
+-- The LOWER() function converts a string to lower-case.
+-- The SUBSTR(stirng, position, length) function return substring of specified length from specified position.
+
+SELECT user_id, 
+CONCAT(UPPER(SUBSTR(name, 1, 1)), LOWER(SUBSTR(name, 2))) AS name 
+FROM Users 
+ORDER BY user_id;
+
+/* 5. Write an SQL query to find for each date the number of different products sold and their names.
+
+The sold products names for each date should be sorted lexicographically.
+
+Return the result table ordered by sell_date.
+
++------------+----------+------------------------------+
+| sell_date  | num_sold | products                     |
++------------+----------+------------------------------+
+| 2020-05-30 | 3        | Basketball,Headphone,T-shirt |
+| 2020-06-01 | 2        | Bible,Pencil                 |
+| 2020-06-02 | 1        | Mask                         |
++------------+----------+------------------------------+
+*/
+
+SELECT sell_date, 
+COUNT(DISTINCT(product)) as num_sold, 
+GROUP_CONCAT(DISTINCT(product)) AS products 
+from Activities
+GROUP BY sell_date
+ORDER BY sell_date
+
+/*
+6. Write an SQL query to report the patient_id, patient_name all conditions of patients who have Type I Diabetes. 
+Type I Diabetes always starts with DIAB1 prefix
+
+Return the result table in any order.
+Patients table:
++------------+--------------+--------------+
+| patient_id | patient_name | conditions   |
++------------+--------------+--------------+
+| 1          | Daniel       | YFEV CDIAB1GH   |
+| 2          | Alice        |              |
+| 3          | Bob          | DIAB100 MYOP |
+| 4          | George       | ACNE DIAB100 |
+| 5          | Alain        | DIAB201      |
++------------+--------------+--------------+
+Output: 
++------------+--------------+--------------+
+| patient_id | patient_name | conditions   |
++------------+--------------+--------------+
+| 3          | Bob          | DIAB100 MYOP |
+| 4          | George       | ACNE DIAB100 | 
++------------+--------------+--------------+
+*/
+
+SELECT patient_id,patient_name,conditions from Patients
+WHERE conditions LIKE 'DIAB1%' or conditions LIKE '% DIAB1%'
+
